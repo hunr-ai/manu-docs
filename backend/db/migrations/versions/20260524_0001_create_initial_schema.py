@@ -1,15 +1,16 @@
 """create initial schema
 
 Revision ID: 20260524_0001
-Revises: 
+Revises:
 Create Date: 2026-05-24 00:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "20260524_0001"
@@ -18,12 +19,13 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
-user_role_enum = sa.Enum(
+user_role_enum = postgresql.ENUM(
     "ADMIN",
     "OWNER",
     "VIEWER",
     "MEMBER",
     name="manudocs_user_role",
+    create_type=False,
 )
 
 
@@ -72,9 +74,7 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_index(
-        "ix_manudocs_users_organization_id_role", table_name="manudocs_users"
-    )
+    op.drop_index("ix_manudocs_users_organization_id_role", table_name="manudocs_users")
     op.drop_table("manudocs_users")
     op.drop_table("manudocs_organizations")
     user_role_enum.drop(op.get_bind(), checkfirst=True)

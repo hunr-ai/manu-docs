@@ -1,10 +1,11 @@
 import asyncio
 import importlib.util
 import os
-from pathlib import Path
 import shutil
+from pathlib import Path
 from typing import Any
 
+import config.settings.settigns_loader as settings_loader_module
 import pytest
 from alembic import command
 from alembic.config import Config
@@ -12,9 +13,6 @@ from pytest_container.container import Container, ContainerData
 from pytest_container.inspect import PortForwarding
 from sqlalchemy import inspect, text
 from sqlalchemy.ext.asyncio import create_async_engine
-
-import config.settings.settigns_loader as settings_loader_module
-
 
 POSTGRES = Container(
     url="docker.io/library/postgres:18-alpine",
@@ -29,7 +27,10 @@ POSTGRES = Container(
 
 def selected_container_runtime_exists() -> bool:
     runtime_choice = os.getenv("CONTAINER_RUNTIME", "podman").lower()
-    return runtime_choice in {"podman", "docker"} and shutil.which(runtime_choice) is not None
+    return (
+        runtime_choice in {"podman", "docker"}
+        and shutil.which(runtime_choice) is not None
+    )
 
 
 CONTAINER_RUNTIME_MISSING = not selected_container_runtime_exists()
@@ -44,7 +45,9 @@ MIGRATION_PATH = (
 
 
 def load_initial_migration() -> Any:
-    spec = importlib.util.spec_from_file_location("initial_schema_migration", MIGRATION_PATH)
+    spec = importlib.util.spec_from_file_location(
+        "initial_schema_migration", MIGRATION_PATH
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -61,6 +64,7 @@ def test_initial_migration_identifiers() -> None:
     assert migration.depends_on is None
     assert migration.user_role_enum.name == "manudocs_user_role"
     assert migration.user_role_enum.enums == ["ADMIN", "OWNER", "VIEWER", "MEMBER"]
+    assert migration.user_role_enum.create_type is False
 
 
 def test_initial_migration_upgrade_and_downgrade_operations(monkeypatch) -> None:
@@ -186,18 +190,22 @@ async def inspect_upgraded_database(url: str) -> None:
             ]
 
             enum_labels = (
-                await connection.execute(
-                    text(
-                        """
+                (
+                    await connection.execute(
+                        text(
+                            """
                         select enumlabel
                         from pg_enum
                         join pg_type on pg_type.oid = pg_enum.enumtypid
                         where pg_type.typname = 'manudocs_user_role'
                         order by enumsortorder
                         """
+                        )
                     )
                 )
-            ).scalars().all()
+                .scalars()
+                .all()
+            )
             assert enum_labels == ["ADMIN", "OWNER", "VIEWER", "MEMBER"]
     finally:
         await engine.dispose()
@@ -250,8 +258,7 @@ def test_initial_migration_upgrades_and_downgrades_postgres(
     host_port = container_per_test.forwarded_ports[0].host_port
     settings_dir = alembic_config.attributes["settings_dir"]
     async_url = (
-        "postgresql+asyncpg://manudocsuser:manudocs"
-        f"@localhost:{host_port}/manudocsdb"
+        f"postgresql+asyncpg://manudocsuser:manudocs@localhost:{host_port}/manudocsdb"
     )
     (settings_dir / "secrets.yaml").write_text(
         f"db:\n  url: {async_url}\n",
