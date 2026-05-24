@@ -1,0 +1,31 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/backend",
+    "${workspaceFolder}/backend/.venv/lib/python3.14/site-packages"
+  ],
+  "python.analysis.include": ["${workspaceFolder}/backend"],
+  "python.testing.cwd": "${workspaceFolder}/backend",
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["."],
+  "python.testing.pytestPath": "${workspaceFolder}/backend/.venv/bin/pytest",
+  "isort.args": ["--profile", "black"],
+  "isort.path": ["${workspaceFolder}/backend/.venv/bin/isort"],
+  "isort.interpreter": ["${workspaceFolder}/backend/.venv/bin/python"],
+  "isort.importStrategy": "fromEnvironment",
+  "ruff.path": ["${workspaceFolder}/backend/.venv/bin/ruff"],
+  "ruff.interpreter": ["${workspaceFolder}/backend/.venv/bin/python"],
+  "ruff.importStrategy": "fromEnvironment",
+  "ruff.configuration": "${workspaceFolder}/backend/pyproject.toml",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.isort": "always",
+    "source.fixAll.ruff": "always",
+    "source.organizeImports": "always"
+  },
+  "[helm]": {
+    "editor.autoIndent": "advanced"
+  },
+  "python.analysis.autoImportCompletions": true
+}

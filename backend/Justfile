@@ -1,0 +1,34 @@
+set dotenv-load := false
+
+alembic := "uv run alembic -c db/alembic.ini"
+
+default:
+    @just --list
+
+test:
+    uv run pytest tests
+
+coverage:
+    uv run pytest tests --cov --cov-report=term-missing
+
+lint:
+    uv run ruff check .
+
+format:
+    uv run ruff format .
+    uv run isort .
+
+migration message:
+    {{alembic}} revision --autogenerate -m "{{message}}"
+
+migrate:
+    {{alembic}} upgrade head
+
+downgrade revision="-1":
+    {{alembic}} downgrade {{revision}}
+
+db-current:
+    {{alembic}} current
+
+db-history:
+    {{alembic}} history

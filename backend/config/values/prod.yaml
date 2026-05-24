@@ -1,0 +1,7 @@
+auth:
+  access-expiration-minutes: 1440
+  refresh-expiration-minutes: 43200
+
+db:
+  pool-size: 5
+  max-overflow: 10
