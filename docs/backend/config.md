@@ -88,8 +88,13 @@ auth:
   secret-key: dev-secret
 
 db:
-  url: postgresql+asyncpg://user:password@localhost:5432/devdb
+  url: postgresql+asyncpg://user:password@postgres:5432/devdb
+
+redis:
+  url: redis://redis:6379/0
 ```
+
+When using Docker Compose, use service names such as `postgres` and `redis` in this file because the backend runs inside the Compose network.
 
 In production, `secrets.yaml` is not loaded by `SettingsLoader`; production secrets should come from the deployment environment or secret-management layer.
 

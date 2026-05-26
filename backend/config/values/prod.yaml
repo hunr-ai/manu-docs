@@ -1,7 +1,26 @@
 auth:
+  jwt-algorithm: HS256
+  jwt-issuer: manudocs
+  access-token-audience: manudocs-api
+  refresh-token-audience: manudocs-auth
+  access-token-scope: auth:access
+  refresh-token-scope: auth:refresh
   access-expiration-minutes: 1440
   refresh-expiration-minutes: 43200
 
 db:
   pool-size: 5
   max-overflow: 10
+
+redis:
+  max-connections: 10
+
+otp:
+  cooldown-seconds: 300
+  expiry-seconds: 900
+  max-attempts-per-day: 5
+
+emailproviders:
+  provider: "resend"
+  smtp-port: 587
+  smtp-use-tls: true

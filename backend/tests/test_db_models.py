@@ -1,13 +1,15 @@
 from typing import cast
 
 import db.models.docs_model
-from db.models import BaseModel, Organization, User, UserRole
-from sqlalchemy import DefaultClause, Table
+from db.models import BaseModel, EmailTemplate, EmailTrack, Organization, User, UserRole
+from sqlalchemy import DateTime, DefaultClause, Table
 from sqlalchemy import Enum as SqlAlchemyEnum
 
 
 def test_models_are_registered_in_base_metadata() -> None:
     assert set(BaseModel.metadata.tables) == {
+        "manudocs_email_templates",
+        "manudocs_email_tracks",
         "manudocs_organizations",
         "manudocs_users",
     }
@@ -43,7 +45,7 @@ def test_user_table_shape() -> None:
     }
     assert table.c.email.nullable is False
     assert table.c.email.unique is True
-    assert table.c.organization_id.nullable is False
+    assert table.c.organization_id.nullable is True
     assert table.c.role.nullable is False
     assert role_type.name == "manudocs_user_role"
     assert role_type.enums == ["ADMIN", "OWNER", "VIEWER", "MEMBER"]
@@ -64,6 +66,68 @@ def test_user_index_matches_query_pattern() -> None:
 
     assert [column.name for column in index.columns] == ["organization_id", "role"]
     assert index.unique is False
+
+
+def test_email_template_table_shape() -> None:
+    table = cast(Table, EmailTemplate.__table__)
+
+    assert table.name == "manudocs_email_templates"
+    assert set(table.c.keys()) == {
+        "name",
+        "use_case",
+        "subject",
+        "html_template",
+        "text_template",
+        "id",
+        "created_at",
+        "updated_at",
+    }
+    assert table.c.id.primary_key is True
+    assert table.c.id.autoincrement is True
+    assert table.c.name.nullable is False
+    assert table.c.name.unique is True
+    assert table.c.use_case.nullable is False
+    assert table.c.use_case.unique is True
+    assert table.c.subject.nullable is False
+    assert table.c.html_template.nullable is False
+    assert table.c.text_template.nullable is False
+
+
+def test_email_track_table_shape() -> None:
+    table = cast(Table, EmailTrack.__table__)
+    indexes = {str(index.name): index for index in table.indexes}
+    tracking_token_index = indexes["ix_manudocs_email_tracks_tracking_token"]
+
+    assert table.name == "manudocs_email_tracks"
+    assert set(table.c.keys()) == {
+        "recipient",
+        "subject",
+        "status",
+        "tracking_token",
+        "sent_at",
+        "read_at",
+        "provider_message_id",
+        "failure_reason",
+        "id",
+        "created_at",
+        "updated_at",
+    }
+    assert table.c.recipient.nullable is False
+    assert table.c.subject.nullable is False
+    assert table.c.status.nullable is False
+    assert str(cast(DefaultClause, table.c.status.server_default).arg) == "pending"
+    assert table.c.tracking_token.nullable is False
+    assert table.c.tracking_token.unique is True
+    assert table.c.sent_at.nullable is True
+    assert table.c.read_at.nullable is True
+    assert isinstance(table.c.sent_at.type, DateTime)
+    assert isinstance(table.c.read_at.type, DateTime)
+    assert table.c.provider_message_id.nullable is True
+    assert table.c.failure_reason.nullable is True
+    assert [column.name for column in tracking_token_index.columns] == [
+        "tracking_token"
+    ]
+    assert tracking_token_index.unique is True
 
 
 def test_relationships_are_bidirectional() -> None:

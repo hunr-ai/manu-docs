@@ -34,6 +34,16 @@ db:
 
 Run database commands from the backend directory.
 
+PostgreSQL 18 containers should mount persistent storage at `/var/lib/postgresql`, not `/var/lib/postgresql/data`. If an existing local development volume was created with the older mount layout and the container exits with an `unused mount/volume` error, recreate the disposable local Postgres volume:
+
+```bash
+docker compose down
+docker volume rm manu-docs_postgres_data
+docker compose up -d postgres
+```
+
+The volume name may differ if Docker Compose is run with a custom project name. Only use that reset flow for local data you can discard. For data that must be preserved, perform a PostgreSQL major-version upgrade with `pg_upgrade` instead.
+
 Create a migration:
 
 ```bash

@@ -32,8 +32,8 @@ class User(BaseModel):
     )
 
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
-    organization_id: Mapped[int] = mapped_column(
-        ForeignKey("manudocs_organizations.id", ondelete="CASCADE"), nullable=False
+    organization_id: Mapped[int | None] = mapped_column(
+        ForeignKey("manudocs_organizations.id", ondelete="CASCADE"), nullable=True
     )
     role: Mapped[UserRole] = mapped_column(
         SQLEnum(UserRole, name="manudocs_user_role"), nullable=False

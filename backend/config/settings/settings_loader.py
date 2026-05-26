@@ -1,5 +1,6 @@
+from functools import lru_cache
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar
 
 import aiofiles
 import yaml
@@ -9,6 +10,7 @@ from . import schemas
 from .schemas.base_settings import SettingsBase
 
 SettingsSchema = type[SettingsBase]
+RequiredSettings = TypeVar("RequiredSettings", bound=SettingsBase)
 
 
 BASE_DIR = Path(__file__).parent.parent / "values"
@@ -30,6 +32,16 @@ class SettingsLoader:
 
     def _get_schema(self, name: str) -> SettingsSchema:
         return self.all_settings[name]
+
+    def get_required_settings(
+        self,
+        loaded_settings: dict[str, SettingsBase],
+        settings_schema: type[RequiredSettings],
+    ) -> RequiredSettings:
+        settings = loaded_settings.get(settings_schema.__name__)
+        if not isinstance(settings, settings_schema):
+            raise TypeError(f"{settings_schema.__name__} schema was not loaded")
+        return settings
 
     def _get_yaml_value(
         self, data: dict[str, Any], settings_name: str, setting_key: str
@@ -107,3 +119,8 @@ class SettingsLoader:
         )
 
         return self._build_settings(config_data, secrets_data)
+
+
+@lru_cache(maxsize=1)
+def get_settings_loader(environment: Literal["dev", "prod"] = "dev") -> SettingsLoader:
+    return SettingsLoader(environment)

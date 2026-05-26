@@ -14,6 +14,9 @@ coverage:
 lint:
     uv run ruff check .
 
+email-worker:
+    uv run python -m workflows.emails.worker
+
 format:
     uv run ruff format .
     uv run isort .

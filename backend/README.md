@@ -19,3 +19,4 @@ just migration "describe schema change"
 
 - [Configuration](../docs/backend/config.md)
 - [Database and migrations](../docs/backend/database.md)
+- [Temporal](../docs/backend/temporal.md)

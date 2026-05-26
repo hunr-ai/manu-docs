@@ -3,7 +3,7 @@ from logging.config import fileConfig
 
 from alembic import context
 from config.settings.schemas.db_settings import DatabaseSettings
-from config.settings.settigns_loader import SettingsLoader
+from config.settings.settings_loader import SettingsLoader
 from db.models import BaseModel
 from db.models import __all__ as all_models
 from sqlalchemy import pool
@@ -32,10 +32,11 @@ target_metadata = BaseModel.metadata
 
 
 def get_database_url() -> str:
-    settings = SettingsLoader().load_settings_sync()
-    database_settings = settings["DatabaseSettings"]
-    if not isinstance(database_settings, DatabaseSettings):
-        raise TypeError("DatabaseSettings schema was not loaded")
+    settings_loader = SettingsLoader()
+    settings = settings_loader.load_settings_sync()
+    database_settings = settings_loader.get_required_settings(
+        settings, DatabaseSettings
+    )
     return database_settings.url.get_secret_value()
 
 
